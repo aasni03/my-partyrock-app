@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Biomedical Research Assistant</title>
+  <style>
+    /* ── Reset & Base ─────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-page:      #0d1117;
+      --bg-card:      #161b22;
+      --bg-card2:     #1c2330;
+      --bg-input:     #0d1117;
+      --border:       #30363d;
+      --border-focus: #388bfd;
+      --text-primary: #e6edf3;
+      --text-muted:   #8b949e;
+      --text-label:   #7ee787;
+      --accent:       #388bfd;
+      --accent-hover: #58a6ff;
+      --accent-run:   #238636;
+      --accent-run-h: #2ea043;
+      --danger:       #f85149;
+      --warn-bg:      #161b22;
+      --scrollbar-w:  6px;
+      --scrollbar-bg: #21262d;
+      --scrollbar-th: #30363d;
+      --radius:       8px;
+      --radius-lg:    12px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: var(--bg-page);
+      color: var(--text-primary);
+      min-height: 100vh;
+      line-height: 1.6;
+    }
+
+    /* ── Scrollbar ────────────────────────────────────── */
+    ::-webkit-scrollbar { width: var(--scrollbar-w); height: var(--scrollbar-w); }
+    ::-webkit-scrollbar-track { background: var(--scrollbar-bg); border-radius: 99px; }
+    ::-webkit-scrollbar-thumb { background: var(--scrollbar-th); border-radius: 99px; }
+    ::-webkit-scrollbar-thumb:hover { background: #484f58; }
+
+    /* ── Header ──────────────────────────────────────── */
+    header {
+      background: linear-gradient(135deg, #0d1117 0%, #161b22 50%, #1a2332 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 28px 24px 24px;
+      text-align: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(12px);
+    }
+    header h1 {
+      font-size: clamp(1.4rem, 4vw, 2rem);
+      font-weight: 700;
+      background: linear-gradient(90deg, #58a6ff, #7ee787, #58a6ff);
+      background-size: 200% auto;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: shimmer 4s linear infinite;
+      letter-spacing: -0.02em;
+    }
+    @keyframes shimmer { to { background-position: 200% center; } }
+    header p {
+      margin-top: 6px;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    /* ── Layout ──────────────────────────────────────── */
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 32px 20px 64px;
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+
+    /* ── Cards ───────────────────────────────────────── */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      transition: border-color 0.2s;
+    }
+    .card:hover { border-color: #484f58; }
+
+    .card-title {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-label);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .card-title .badge {
+      background: #1f2937;
+      color: var(--text-muted);
+      font-size: 0.65rem;
+      padding: 2px 7px;
+      border-radius: 99px;
+      border: 1px solid var(--border);
+    }
+    .card-title .badge.optional { color: #8b949e; }
+
+    .section-label {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 16px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .section-label .num {
+      background: var(--accent);
+      color: #fff;
+      font-size: 0.72rem;
+      font-weight: 700;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    /* ── Upload Zones ────────────────────────────────── */
+    .uploads-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    @media (max-width: 640px) { .uploads-row { grid-template-columns: 1fr; } }
+
+    .upload-zone {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 28px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      position: relative;
+      background: var(--bg-input);
+    }
+    .upload-zone:hover, .upload-zone.dragover {
+      border-color: var(--accent);
+      background: rgba(56, 139, 253, 0.05);
+    }
+    .upload-zone.has-file {
+      border-color: #2ea043;
+      background: rgba(46, 160, 67, 0.05);
+    }
+    .upload-zone input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+    }
+    .upload-icon {
+      font-size: 2rem;
+      margin-bottom: 8px;
+      display: block;
+    }
+    .upload-zone p { color: var(--text-muted); font-size: 0.85rem; }
+    .upload-zone .file-name {
+      margin-top: 8px;
+      font-size: 0.82rem;
+      color: #7ee787;
+      font-weight: 500;
+      word-break: break-all;
+    }
+    .upload-zone .clear-btn {
+      margin-top: 10px;
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      padding: 3px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: border-color 0.15s, color 0.15s;
+      display: none;
+    }
+    .upload-zone.has-file .clear-btn { display: inline-block; }
+    .upload-zone .clear-btn:hover { border-color: var(--danger); color: var(--danger); }
+
+    /* ── Run All Button ──────────────────────────────── */
+    .run-row {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .btn-run-all {
+      background: var(--accent-run);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius);
+      padding: 14px 40px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      letter-spacing: 0.01em;
+      box-shadow: 0 0 0 0 rgba(46,160,67,0);
+    }
+    .btn-run-all:hover:not(:disabled) {
+      background: var(--accent-run-h);
+      box-shadow: 0 0 0 4px rgba(46,160,67,0.25);
+    }
+    .btn-run-all:active:not(:disabled) { transform: scale(0.98); }
+    .btn-run-all:disabled { opacity: 0.55; cursor: not-allowed; }
+
+    .run-status {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    /* ── Output Panels ───────────────────────────────── */
+    .output-panel {
+      height: 340px;
+      overflow-y: auto;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      font-size: 0.875rem;
+      line-height: 1.7;
+      position: relative;
+      transition: border-color 0.2s;
+    }
+    .output-panel.streaming { border-color: var(--accent); }
+    .output-panel.done { border-color: #2ea043; }
+    .output-panel.errored { border-color: var(--danger); }
+
+    .output-placeholder {
+      color: var(--text-muted);
+      font-style: italic;
+      font-size: 0.82rem;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      white-space: nowrap;
+    }
+
+    /* ── Spinner ─────────────────────────────────────── */
+    .spinner-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--text-muted);
+      font-size: 0.82rem;
+    }
+    .spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      flex-shrink: 0;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Error ───────────────────────────────────────── */
+    .error-msg {
+      color: var(--danger);
+      font-size: 0.82rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 6px;
+    }
+    .error-msg::before { content: "⚠"; flex-shrink: 0; }
+
+    /* ── Markdown Rendering ──────────────────────────── */
+    .md-line { display: block; animation: fadeIn 0.18s ease-out both; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(2px); } to { opacity: 1; transform: translateY(0); } }
+
+    .md-h1 { font-size: 1.2rem; font-weight: 700; color: var(--accent-hover); margin: 12px 0 6px; }
+    .md-h2 { font-size: 1.05rem; font-weight: 700; color: var(--accent-hover); margin: 10px 0 5px; }
+    .md-h3 { font-size: 0.95rem; font-weight: 600; color: #a5d6ff; margin: 8px 0 4px; }
+    .md-hr { border: none; border-top: 1px solid var(--border); margin: 10px 0; display: block; }
+    .md-bullet { padding-left: 1.4em; color: var(--text-primary); }
+    .md-bullet::before { content: "•"; color: var(--accent); margin-right: 0.5em; margin-left: -1.1em; }
+    .md-numbered { padding-left: 1.4em; color: var(--text-primary); }
+    .md-code-inline {
+      background: #21262d;
+      border: 1px solid var(--border);
+      padding: 1px 5px;
+      border-radius: 4px;
+      font-family: "SF Mono", "Fira Code", Consolas, monospace;
+      font-size: 0.82em;
+      color: #f0883e;
+    }
+    .md-table-row { display: block; border-bottom: 1px solid var(--border); padding: 3px 0; }
+    .md-table-row.header-row { color: var(--accent-hover); font-weight: 600; border-bottom: 2px solid var(--accent); }
+    .md-table-separator { display: none; }
+
+    /* blinking cursor on active streaming line */
+    .cursor::after {
+      content: "▋";
+      color: var(--accent);
+      animation: blink 0.8s step-end infinite;
+    }
+    @keyframes blink { 50% { opacity: 0; } }
+
+    /* ── Info Banner ─────────────────────────────────── */
+    .info-banner {
+      background: rgba(56, 139, 253, 0.08);
+      border: 1px solid rgba(56, 139, 253, 0.3);
+      border-radius: var(--radius);
+      padding: 12px 16px;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+    }
+    .info-banner::before { content: "ℹ"; color: var(--accent); flex-shrink: 0; font-size: 1rem; }
+
+    .warn-banner {
+      background: rgba(248, 81, 73, 0.08);
+      border: 1px solid rgba(248, 81, 73, 0.3);
+      border-radius: var(--radius);
+      padding: 12px 16px;
+      font-size: 0.82rem;
+      color: #ffa198;
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+    }
+    .warn-banner::before { content: "⚠"; flex-shrink: 0; }
+
+    /* ── Section dividers ────────────────────────────── */
+    .section-divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--border), transparent);
+      margin: 4px 0;
+    }
+
+    /* ── Panel header row ────────────────────────────── */
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .panel-status { font-size: 0.72rem; color: var(--text-muted); }
+    .panel-status.ok { color: #7ee787; }
+    .panel-status.err { color: var(--danger); }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>🧬 AI Biomedical Research Assistant</h1>
+  <p>Upload a research paper and let AI generate 12 comprehensive analyses instantly</p>
+</header>
+
+<main>
+
+  <!-- ── Upload Section ─────────────────────────────── -->
+  <div class="card">
+    <div class="card-title">
+      📄 Research Paper Uploads
+      <span class="badge">Step 1 &amp; 2</span>
+    </div>
+    <div class="uploads-row">
+
+      <!-- Paper 1 -->
+      <div>
+        <div style="font-size:0.82rem;color:var(--text-muted);margin-bottom:8px;">
+          <strong style="color:var(--text-primary)">Paper 1</strong> — Required for all analyses
+        </div>
+        <div class="upload-zone" id="upload1Zone">
+          <input type="file" id="upload1Input"
+            accept=".pdf,.docx,.pptx,.csv,.json,.html,.jpg,.jpeg,.png,.webp"
+            aria-label="Upload primary research paper" />
+          <span class="upload-icon">📄</span>
+          <p>Drag &amp; drop or click to upload</p>
+          <p style="margin-top:4px;font-size:0.75rem;">PDF, DOCX, PPTX, CSV, JSON, HTML, JPG, PNG, WEBP</p>
+          <div class="file-name" id="upload1Name"></div>
+          <button class="clear-btn" id="upload1Clear" type="button" aria-label="Clear paper 1">✕ Clear</button>
+        </div>
+      </div>
+
+      <!-- Paper 2 -->
+      <div>
+        <div style="font-size:0.82rem;color:var(--text-muted);margin-bottom:8px;">
+          <strong style="color:var(--text-primary)">Paper 2</strong> — Optional, for Paper Comparison only
+        </div>
+        <div class="upload-zone" id="upload2Zone">
+          <input type="file" id="upload2Input"
+            accept=".pdf,.docx,.pptx,.csv,.json,.html,.jpg,.jpeg,.png,.webp"
+            aria-label="Upload second research paper (optional)" />
+          <span class="upload-icon">📋</span>
+          <p>Drag &amp; drop or click to upload</p>
+          <p style="margin-top:4px;font-size:0.75rem;">Optional — required only for comparison</p>
+          <div class="file-name" id="upload2Name"></div>
+          <button class="clear-btn" id="upload2Clear" type="button" aria-label="Clear paper 2">✕ Clear</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── Run All ─────────────────────────────────────── -->
+  <div class="run-row">
+    <button class="btn-run-all" id="btnRunAll" type="button">
+      <span>⚡</span> Run All Analyses
+    </button>
+    <span class="run-status" id="runStatus"></span>
+  </div>
+
+  <div class="info-banner">
+    Upload your paper above, then click <strong>Run All Analyses</strong> to generate all 12 outputs simultaneously.
+    All AI-generated suggestions are clearly labeled and distinct from extracted facts.
+  </div>
+
+  <!-- ── 1. AI Research Summary ──────────────────────── -->
+  <div class="card">
+    <div class="section-label"><span class="num">1</span> AI Research Summary</div>
+    <div class="panel-header">
+      <span style="font-size:0.8rem;color:var(--text-muted)">Structured summary: objectives, methods, findings, conclusions</span>
+      <span class="panel-status" id="status_ai_research_summary"></span>
+    </div>
+    <div class="output-panel" id="out_ai_research_summary" role="region" aria-label="AI Research Summary output">
+      <span class="output-placeholder">Output will appear here after running…</span>
+    </div>
+  </div>
+
+  <!-- ── 2. Keyword Extraction ───────────────────────── -->
+  <div class="card">
+    <div class="section-label"><span class="num">2</span> Keyword Extraction</div>
+    <div class="panel-header">
+      <span style="font-size:0.8rem;color:var(--text-muted)">Genes, proteins, diseases, drugs, pathways, techniques</span>
+      <span class="panel-status" id="status_keyword_extraction"></span>
+    </div>
+    <div class="output-panel" id="out_keyword_extraction" role="region" aria-label="Keyword Extraction output">
+      <span class="output-placeholder">Output will appear here after running…</span>
+    </div>
+  </div>
+
+  <!-- ── 3. Gene-Disease-Treatment Table ────────────── -->
+  <div class="card">
+    <div class="section-label"><span class="num">3</span> Gene‑Disease‑Treatment Relationship Table</div>
+    <div class="panel-header">
+      <span style="font-size:0.8rem;color:var(--text-muted)">Relationships in a markdown table with evidence</span>
+      <span class="panel-status" id="status_gene_disease_treatment_relationship_table"></span>
+    </div>
+    <div class="output-panel" id="out_gene_disease_treatment_relationship_table" role="region" aria-label="Gene-Disease-Treatment output">
+      <span class="output-placeholder">Output will appear here after running…</span>
+    </div>
+  </div>
+
+  <!-- ── 4. Biological Dataset Interpretation ─────────── -->
+  <div class="card">
+    <div class="section-label"><span class="num">4</span> Biological Dataset Interpretation</div>
+    <div class="panel-header">
+      <span style="font-size:0.8rem;color:var(--text-muted)">Data trends, observations, biological significance, implications</span>
+      <span class="panel-status" id="status_biological_dataset_interpretation"></span>
+    </div>
+    <div class="output-panel" id="out_biological_dataset_interpretation" role="region" aria-label="Biological Dataset Interpretation output">
+      <span class="output-placeholder">Output will appear here after running…</span>
+    </div>
+  </div>
+
+  <!-- ── 5. Plain Language Explanation ──────────────── -->
+  <div class="card">
+    <div class="section-label"><span class="num">5</span> Plain Language Explanation</div>
+    <div class="panel-header">
+      <span style="font-size:0.8rem;color:var(--text-muted)">Simplified for undergrad-level understanding</span>
+      <span class="panel-status" id="status_plain_language_explanation"></span>
+    </div>
+    <div class="output-panel" id="out_plain_language_explanation" role="region" aria-label="Plain Language Explanation output">
+      <span class="output-placeholder">Output will appear here after running…</span>
+    </div>
+  </div>
+
+  <!-- ── 6. Suggested Future Research ───────────────── -->
+  <div class="card">
+    <div class="section-label"><span class="num">6</span> Suggested Future Research</div>
+    <div class="panel-header">
+      <span style="font-size:0.8rem;color:var(--text-muted)">AI-generated follow-up ideas and research gaps <em style="color:#f0883e">(AI suggestions)</em></span>
+      <span class="panel-status" id="status_suggested_future_research"></span>
+    </div>
+    <div class="output-panel" id="out_suggested_future_research" role="region" aria-label="Suggested Future Research output">
+      <span class="output-placeholder">Output will appear here after running…</span>
+    </div>
+  </div>
+
+  <!-- ── 7. Discussion Questions ────────────────────── -->
+  <div class="card">
+    <div class="section-label"><span class="num">7</span> Discussion Questions</div>
+    <div class="panel-header">
+      <span style="font-size:0.8rem;color:var(--text-muted)">5 journal club-style questions</span>
+      <span class="panel-status" id="status_discussion_questions"></span>
+    </div>
+    <div class="output-panel" id="out_discussion_questions" role="region" aria-label="Discussion Questions output">
+      <span class="output-placeholder">Output will appear here after running…</span>
+    </div>
+  </div>
+
+  <!-- ── 8. Study Timeline ───────────────────────────── -->
+  <div class="card">
+    <div class="section-label"><span class="num">8</span> Study Timeline</div>
+    <div class="panel-header">
+      <span style="font-size:0.8rem;color:var(--text-muted)">Chronological milestones referenced in the paper</span>
+      <span class="panel-status" id="status_study_timeline"></span>
+    </div>
+    <div class="output-panel" id="out_study_timeline" role="region" aria-label="Study Timeline output">
+      <span class="output-placeholder">Output will appear here after running…</span>
+    </div>
+  </div>
+
+  <!-- ── 9. Research Limitations Detector ───────────── -->
+  <div class="card">
+    <div class="section-label"><span class="num">9</span> Research Limitations Detector</div>
+    <div class="panel-header">
+      <span style="font-size:0.8rem;color:var(--text-muted)">Weaknesses and methodological concerns</span>
+      <span class="panel-status" id="status_research_limitations_detector"></span>
+    </div>
+    <div class="output-panel" id="out_research_limitations_detector" role="region" aria-label="Research Limitations output">
+      <span class="output-placeholder">Output will appear here after running…</span>
+    </div>
+  </div>
+
+  <!-- ── 10. Drug Repurposing Suggestions ───────────── -->
+  <div class="card">
+    <div class="section-label"><span class="num">10</span> Drug Repurposing Suggestions</div>
+    <div class="panel-header">
+      <span style="font-size:0.8rem;color:var(--text-muted)">Speculative drug ideas based on paper content <em style="color:#f0883e">(AI hypotheses — not medical advice)</em></span>
+      <span class="panel-status" id="status_drug_repurposing_suggestions"></span>
+    </div>
+    <div class="warn-banner" style="margin-bottom:10px;font-size:0.78rem;">
+      Drug repurposing suggestions are AI-generated research hypotheses only. They are not medical recommendations,
+      clinical advice, or treatment suggestions. Always consult qualified medical professionals.
+    </div>
+    <div class="output-panel" id="out_drug_repurposing_suggestions" role="region" aria-label="Drug Repurposing output">
+      <span class="output-placeholder">Output will appear here after running…</span>
+    </div>
+  </div>
+
+  <!-- ── 11. Experiment Planner ─────────────────────── -->
+  <div class="card">
+    <div class="section-label"><span class="num">11</span> Experiment Planner</div>
+    <div class="panel-header">
+      <span style="font-size:0.8rem;color:var(--text-muted)">Detailed follow-up experiment designs <em style="color:#f0883e">(AI-generated ideas)</em></span>
+      <span class="panel-status" id="status_experiment_planner"></span>
+    </div>
+    <div class="output-panel" id="out_experiment_planner" role="region" aria-label="Experiment Planner output">
+      <span class="output-placeholder">Output will appear here after running…</span>
+    </div>
+  </div>
+
+  <!-- ── 12. Paper Comparison ───────────────────────── -->
+  <div class="card">
+    <div class="section-label"><span class="num">12</span> Paper Comparison</div>
+    <div class="panel-header">
+      <span style="font-size:0.8rem;color:var(--text-muted)">Side-by-side comparison — requires both papers</span>
+      <span class="panel-status" id="status_paper_comparison"></span>
+    </div>
+    <div class="info-banner" style="margin-bottom:10px;font-size:0.78rem;">
+      This analysis requires both Paper 1 and Paper 2 to be uploaded. If only one paper is provided,
+      the AI will indicate that a second paper is needed.
+    </div>
+    <div class="output-panel" id="out_paper_comparison" role="region" aria-label="Paper Comparison output">
+      <span class="output-placeholder">Upload both papers and run to compare…</span>
+    </div>
+  </div>
+
+</main>
+
+<script>
+// ─────────────────────────────────────────────────────────────────────────────
+// Lambda Function URLs — injected by GitHub Actions at deploy time
+// ─────────────────────────────────────────────────────────────────────────────
+const STREAM_URLS = {
+  ai_research_summary:                       '__URL_AI_RESEARCH_SUMMARY__',
+  keyword_extraction:                        '__URL_KEYWORD_EXTRACTION__',
+  gene_disease_treatment_relationship_table: '__URL_GENE_DISEASE_TREATMENT_RELATIONSHIP_TABLE__',
+  biological_dataset_interpretation:         '__URL_BIOLOGICAL_DATASET_INTERPRETATION__',
+  plain_language_explanation:                '__URL_PLAIN_LANGUAGE_EXPLANATION__',
+  suggested_future_research:                 '__URL_SUGGESTED_FUTURE_RESEARCH__',
+  discussion_questions:                      '__URL_DISCUSSION_QUESTIONS__',
+  study_timeline:                            '__URL_STUDY_TIMELINE__',
+  research_limitations_detector:             '__URL_RESEARCH_LIMITATIONS_DETECTOR__',
+  drug_repurposing_suggestions:              '__URL_DRUG_REPURPOSING_SUGGESTIONS__',
+  experiment_planner:                        '__URL_EXPERIMENT_PLANNER__',
+  paper_comparison:                          '__URL_PAPER_COMPARISON__',
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// File State
+// ─────────────────────────────────────────────────────────────────────────────
+const fileState = {
+  paper1: { data: null, mime: null, name: null },
+  paper2: { data: null, mime: null, name: null },
+};
+
+function setupUpload(inputId, zoneId, nameId, clearId, stateKey) {
+  const input  = document.getElementById(inputId);
+  const zone   = document.getElementById(zoneId);
+  const nameEl = document.getElementById(nameId);
+  const clearBtn = document.getElementById(clearId);
+
+  function handleFile(file) {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const dataUrl = e.target.result;
+      // Strip "data:<mime>;base64," prefix → raw base64
+      const commaIdx = dataUrl.indexOf(',');
+      const raw = dataUrl.substring(commaIdx + 1);
+      fileState[stateKey].data = raw;
+      fileState[stateKey].mime = file.type || 'application/octet-stream';
+      fileState[stateKey].name = file.name;
+      nameEl.textContent = file.name;
+      zone.classList.add('has-file');
+    };
+    reader.readAsDataURL(file);
+  }
+
+  input.addEventListener('change', () => handleFile(input.files[0]));
+
+  zone.addEventListener('dragover', (e) => { e.preventDefault(); zone.classList.add('dragover'); });
+  zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+  zone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    zone.classList.remove('dragover');
+    handleFile(e.dataTransfer.files[0]);
+  });
+
+  clearBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    fileState[stateKey] = { data: null, mime: null, name: null };
+    nameEl.textContent = '';
+    zone.classList.remove('has-file');
+    input.value = '';
+  });
+}
+
+setupUpload('upload1Input', 'upload1Zone', 'upload1Name', 'upload1Clear', 'paper1');
+setupUpload('upload2Input', 'upload2Zone', 'upload2Name', 'upload2Clear', 'paper2');
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Markdown Line Renderer
+// ─────────────────────────────────────────────────────────────────────────────
+function renderInline(text) {
+  // Bold (**text**)
+  text = text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  // Italic (*text*)
+  text = text.replace(/(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/g, '<em>$1</em>');
+  // Inline code (`code`)
+  text = text.replace(/`([^`]+)`/g, '<span class="md-code-inline">$1</span>');
+  return text;
+}
+
+function renderLine(raw) {
+  const trimmed = raw.trimEnd();
+  if (trimmed === '' || trimmed === '\n') return '<br>';
+
+  // Headings
+  if (/^###\s+(.*)$/.test(trimmed)) {
+    return `<span class="md-line md-h3">${renderInline(trimmed.replace(/^###\s+/, ''))}</span>`;
+  }
+  if (/^##\s+(.*)$/.test(trimmed)) {
+    return `<span class="md-line md-h2">${renderInline(trimmed.replace(/^##\s+/, ''))}</span>`;
+  }
+  if (/^#\s+(.*)$/.test(trimmed)) {
+    return `<span class="md-line md-h1">${renderInline(trimmed.replace(/^#\s+/, ''))}</span>`;
+  }
+  // HR
+  if (/^---+$/.test(trimmed) || /^\*\*\*+$/.test(trimmed)) {
+    return `<hr class="md-hr">`;
+  }
+  // Table separator row (|---|---|)
+  if (/^\|[\s\-:|]+\|/.test(trimmed)) {
+    return `<span class="md-line md-table-separator"></span>`;
+  }
+  // Table row
+  if (/^\|.+\|/.test(trimmed)) {
+    const isHeader = trimmed.includes('**') || false;
+    return `<span class="md-line md-table-row${isHeader ? ' header-row' : ''}">${renderInline(trimmed)}</span>`;
+  }
+  // Unordered list (- or *)
+  if (/^(\s*[-*]\s)(.*)$/.test(trimmed)) {
+    const content = trimmed.replace(/^\s*[-*]\s/, '');
+    return `<span class="md-line md-bullet">${renderInline(content)}</span>`;
+  }
+  // Numbered list
+  if (/^\d+\.\s/.test(trimmed)) {
+    return `<span class="md-line md-numbered">${renderInline(trimmed)}</span>`;
+  }
+  // Normal paragraph
+  return `<span class="md-line">${renderInline(trimmed)}</span>`;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Streaming fetch + render
+// ─────────────────────────────────────────────────────────────────────────────
+async function streamToPanel(widgetKey, url, payload) {
+  const panel    = document.getElementById(`out_${widgetKey}`);
+  const statusEl = document.getElementById(`status_${widgetKey}`);
+
+  // Reset panel
+  panel.innerHTML = '';
+  panel.classList.remove('done', 'errored');
+  panel.classList.add('streaming');
+  statusEl.className = 'panel-status';
+  statusEl.textContent = 'Generating…';
+
+  // Spinner
+  const spinnerWrap = document.createElement('div');
+  spinnerWrap.className = 'spinner-wrap';
+  spinnerWrap.innerHTML = '<div class="spinner"></div><span>Generating…</span>';
+  panel.appendChild(spinnerWrap);
+
+  let response;
+  try {
+    response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+  } catch (err) {
+    panel.innerHTML = `<div class="error-msg">Network error: ${err.message}</div>`;
+    panel.classList.remove('streaming');
+    panel.classList.add('errored');
+    statusEl.className = 'panel-status err';
+    statusEl.textContent = 'Error';
+    return;
+  }
+
+  if (!response.ok) {
+    const errText = await response.text().catch(() => response.statusText);
+    panel.innerHTML = `<div class="error-msg">HTTP ${response.status}: ${errText}</div>`;
+    panel.classList.remove('streaming');
+    panel.classList.add('errored');
+    statusEl.className = 'panel-status err';
+    statusEl.textContent = `Error ${response.status}`;
+    return;
+  }
+
+  // Remove spinner, start streaming content
+  panel.innerHTML = '';
+
+  const reader  = response.body.getReader();
+  const decoder = new TextDecoder('utf-8');
+  let buffer    = '';
+  let cursorEl  = null;
+
+  function removeCursor() {
+    if (cursorEl) { cursorEl.classList.remove('cursor'); cursorEl = null; }
+  }
+
+  function appendLine(lineText) {
+    removeCursor();
+    if (lineText.trim() === '') {
+      panel.innerHTML += '<br>';
+      return;
+    }
+    const html = renderLine(lineText);
+    const tmp = document.createElement('div');
+    tmp.innerHTML = html;
+    const node = tmp.firstChild;
+    if (node) {
+      panel.appendChild(node);
+      // Auto-scroll
+      panel.scrollTop = panel.scrollHeight;
+    }
+  }
+
+  function appendPartial(text) {
+    removeCursor();
+    if (!text) return;
+    // Find or create active partial span
+    let partialEl = panel.querySelector('.partial-line');
+    if (!partialEl) {
+      partialEl = document.createElement('span');
+      partialEl.className = 'md-line partial-line cursor';
+      panel.appendChild(partialEl);
+    }
+    partialEl.innerHTML = renderInline(text);
+    partialEl.classList.add('cursor');
+    cursorEl = partialEl;
+    panel.scrollTop = panel.scrollHeight;
+  }
+
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+
+      // Flush complete lines
+      let nl;
+      while ((nl = buffer.indexOf('\n')) !== -1) {
+        const line = buffer.substring(0, nl);
+        buffer = buffer.substring(nl + 1);
+
+        // Remove partial-line span before rendering completed line
+        const partial = panel.querySelector('.partial-line');
+        if (partial) partial.remove();
+        cursorEl = null;
+
+        appendLine(line);
+      }
+
+      // Render remaining buffer as partial (streaming) line
+      if (buffer) {
+        appendPartial(buffer);
+      }
+    }
+
+    // Flush any remaining buffer
+    if (buffer.trim()) {
+      const partial = panel.querySelector('.partial-line');
+      if (partial) partial.remove();
+      appendLine(buffer);
+      buffer = '';
+    }
+
+    removeCursor();
+    panel.classList.remove('streaming');
+    panel.classList.add('done');
+    statusEl.className = 'panel-status ok';
+    statusEl.textContent = '✓ Done';
+
+  } catch (err) {
+    removeCursor();
+    const errEl = document.createElement('div');
+    errEl.className = 'error-msg';
+    errEl.textContent = `Stream error: ${err.message}`;
+    panel.appendChild(errEl);
+    panel.classList.remove('streaming');
+    panel.classList.add('errored');
+    statusEl.className = 'panel-status err';
+    statusEl.textContent = 'Error';
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Build payload per widget
+// ─────────────────────────────────────────────────────────────────────────────
+function buildPayload(widgetKey) {
+  const p1 = fileState.paper1;
+  const p2 = fileState.paper2;
+
+  const base = {};
+  if (p1.data) {
+    base.file_data = p1.data;
+    base.file_mime = p1.mime;
+  }
+
+  if (widgetKey === 'paper_comparison') {
+    if (p2.data) {
+      base.file2_data = p2.data;
+      base.file2_mime = p2.mime;
+    }
+  }
+
+  return base;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Run All
+// ─────────────────────────────────────────────────────────────────────────────
+const btnRunAll  = document.getElementById('btnRunAll');
+const runStatus  = document.getElementById('runStatus');
+
+btnRunAll.addEventListener('click', async () => {
+  if (!fileState.paper1.data) {
+    runStatus.textContent = '⚠ Please upload Paper 1 first.';
+    runStatus.style.color = 'var(--danger)';
+    setTimeout(() => { runStatus.textContent = ''; runStatus.style.color = ''; }, 4000);
+    return;
+  }
+
+  btnRunAll.disabled = true;
+  runStatus.style.color = 'var(--text-muted)';
+  runStatus.textContent = 'Running all 12 analyses…';
+
+  const tasks = Object.keys(STREAM_URLS).map((key) => {
+    const url     = STREAM_URLS[key];
+    const payload = buildPayload(key);
+    return streamToPanel(key, url, payload);
+  });
+
+  await Promise.allSettled(tasks);
+
+  btnRunAll.disabled = false;
+  runStatus.style.color = '#7ee787';
+  runStatus.textContent = '✓ All analyses complete';
+  setTimeout(() => { runStatus.textContent = ''; runStatus.style.color = ''; }, 6000);
+});
+</script>
+
+</body>
+</html>

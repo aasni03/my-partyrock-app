@@ -1,0 +1,11 @@
+# Ensure shell scripts always use LF on checkout (required for Lambda run.sh)
+*.sh text eol=lf
+
+# Python and YAML — LF
+*.py text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
+*.txt text eol=lf
+*.html text eol=lf
+*.json text eol=lf
+*.md text eol=lf

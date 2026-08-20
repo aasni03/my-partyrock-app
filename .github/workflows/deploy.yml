@@ -1,0 +1,126 @@
+name: Deploy AI Biomedical Research Assistant
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Build & Deploy to AWS
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      # ── 1. Checkout ──────────────────────────────────────────────────────────
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ── 2. Configure AWS credentials ─────────────────────────────────────────
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id:     ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region:            ap-southeast-1
+
+      # ── 3. Set up Python 3.12 ────────────────────────────────────────────────
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # ── 4. Set up AWS SAM CLI ────────────────────────────────────────────────
+      - name: Set up AWS SAM CLI
+        uses: aws-actions/setup-sam@v2
+        with:
+          use-installer: true
+
+      # ── 5. SAM Build ─────────────────────────────────────────────────────────
+      - name: SAM Build
+        run: sam build --template infra/template.yaml
+
+      # ── 6. SAM Deploy ────────────────────────────────────────────────────────
+      - name: SAM Deploy
+        run: |
+          sam deploy \
+            --stack-name ai-biomedical-research-assistant \
+            --s3-bucket ${{ secrets.SAM_DEPLOY_BUCKET }} \
+            --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM \
+            --region ap-southeast-1 \
+            --no-confirm-changeset \
+            --no-fail-on-empty-changeset
+
+      # ── 7. Read CloudFormation Outputs ───────────────────────────────────────
+      - name: Read CloudFormation outputs and inject into frontend
+        run: |
+          # Helper: fetch a single output value by key
+          get_output() {
+            aws cloudformation describe-stacks \
+              --stack-name ai-biomedical-research-assistant \
+              --query "Stacks[0].Outputs[?OutputKey=='$1'].OutputValue" \
+              --output text
+          }
+
+          # Fetch all Lambda Function URLs
+          URL=$(get_output AIResearchSummaryUrl)
+          sed -i "s|__URL_AI_RESEARCH_SUMMARY__|$URL|g" frontend/index.html
+
+          URL=$(get_output KeywordExtractionUrl)
+          sed -i "s|__URL_KEYWORD_EXTRACTION__|$URL|g" frontend/index.html
+
+          URL=$(get_output Gene-Disease-TreatmentRelationshipTableUrl)
+          sed -i "s|__URL_GENE_DISEASE_TREATMENT_RELATIONSHIP_TABLE__|$URL|g" frontend/index.html
+
+          URL=$(get_output BiologicalDatasetInterpretationUrl)
+          sed -i "s|__URL_BIOLOGICAL_DATASET_INTERPRETATION__|$URL|g" frontend/index.html
+
+          URL=$(get_output PlainLanguageExplanationUrl)
+          sed -i "s|__URL_PLAIN_LANGUAGE_EXPLANATION__|$URL|g" frontend/index.html
+
+          URL=$(get_output SuggestedFutureResearchUrl)
+          sed -i "s|__URL_SUGGESTED_FUTURE_RESEARCH__|$URL|g" frontend/index.html
+
+          URL=$(get_output DiscussionQuestionsUrl)
+          sed -i "s|__URL_DISCUSSION_QUESTIONS__|$URL|g" frontend/index.html
+
+          URL=$(get_output StudyTimelineUrl)
+          sed -i "s|__URL_STUDY_TIMELINE__|$URL|g" frontend/index.html
+
+          URL=$(get_output ResearchLimitationsDetectorUrl)
+          sed -i "s|__URL_RESEARCH_LIMITATIONS_DETECTOR__|$URL|g" frontend/index.html
+
+          URL=$(get_output DrugRepurposingSuggestionsUrl)
+          sed -i "s|__URL_DRUG_REPURPOSING_SUGGESTIONS__|$URL|g" frontend/index.html
+
+          URL=$(get_output ExperimentPlannerUrl)
+          sed -i "s|__URL_EXPERIMENT_PLANNER__|$URL|g" frontend/index.html
+
+          URL=$(get_output PaperComparisonUrl)
+          sed -i "s|__URL_PAPER_COMPARISON__|$URL|g" frontend/index.html
+
+          # Capture bucket name and website URL for later steps
+          BUCKET_NAME=$(get_output BucketName)
+          WEBSITE_URL=$(get_output WebsiteUrl)
+
+          echo "BUCKET_NAME=$BUCKET_NAME" >> $GITHUB_ENV
+          echo "WEBSITE_URL=$WEBSITE_URL" >> $GITHUB_ENV
+
+          echo "✅ All URLs injected into frontend/index.html"
+
+      # ── 8. Upload frontend to S3 ─────────────────────────────────────────────
+      - name: Sync frontend to S3
+        run: |
+          aws s3 sync frontend/ s3://${{ env.BUCKET_NAME }}/ \
+            --cache-control no-cache \
+            --delete
+
+      # ── 9. Print Website URL ─────────────────────────────────────────────────
+      - name: Print deployment URL
+        run: |
+          echo "══════════════════════════════════════════════"
+          echo "  ✅ Deployment complete!"
+          echo "  🌐 Website URL: ${{ env.WEBSITE_URL }}"
+          echo "══════════════════════════════════════════════"
