@@ -70,7 +70,7 @@ jobs:
           URL=$(get_output KeywordExtractionUrl)
           sed -i "s|__URL_KEYWORD_EXTRACTION__|$URL|g" frontend/index.html
 
-          URL=$(get_output Gene-Disease-TreatmentRelationshipTableUrl)
+          URL=$(get_output GeneDiseaseeTreatmentRelationshipTableUrl)
           sed -i "s|__URL_GENE_DISEASE_TREATMENT_RELATIONSHIP_TABLE__|$URL|g" frontend/index.html
 
           URL=$(get_output BiologicalDatasetInterpretationUrl)

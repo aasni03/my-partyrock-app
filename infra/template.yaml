@@ -18,9 +18,7 @@ Globals:
 
 Resources:
 
-  # ─────────────────────────────────────────────
-  # IAM Role
-  # ─────────────────────────────────────────────
+  # ── IAM Role ──────────────────────────────────────────────────────────────
   AppBedrockRole:
     Type: AWS::IAM::Role
     Properties:
@@ -48,165 +46,139 @@ Resources:
                   - arn:aws:bedrock:*::foundation-model/anthropic.claude-haiku-4-5-20251001-v1:0-20260217-v1:0
                   - arn:aws:bedrock:::foundation-model/anthropic.claude-haiku-4-5-20251001-v1:0-20260217-v1:0
 
-  # ─────────────────────────────────────────────
-  # 1. AI Research Summary
-  # ─────────────────────────────────────────────
+  # ── 1. AI Research Summary ────────────────────────────────────────────────
   AIResearchSummaryFunction:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: ai-biomedical-ai-research-summary
-      CodeUri: ../lambdas/ai_research_summary/
+      CodeUri: lambdas/ai_research_summary/
       Handler: run.sh
       FunctionUrlConfig:
         AuthType: NONE
         InvokeMode: RESPONSE_STREAM
 
-  # ─────────────────────────────────────────────
-  # 2. Keyword Extraction
-  # ─────────────────────────────────────────────
+  # ── 2. Keyword Extraction ─────────────────────────────────────────────────
   KeywordExtractionFunction:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: ai-biomedical-keyword-extraction
-      CodeUri: ../lambdas/keyword_extraction/
+      CodeUri: lambdas/keyword_extraction/
       Handler: run.sh
       FunctionUrlConfig:
         AuthType: NONE
         InvokeMode: RESPONSE_STREAM
 
-  # ─────────────────────────────────────────────
-  # 3. Gene-Disease-Treatment Relationship Table
-  # ─────────────────────────────────────────────
+  # ── 3. Gene-Disease-Treatment Relationship Table ──────────────────────────
   GeneDiseaseeTreatmentRelationshipTableFunction:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: ai-biomedical-gene-disease-treatment
-      CodeUri: ../lambdas/gene_disease_treatment/
+      CodeUri: lambdas/gene_disease_treatment/
       Handler: run.sh
       FunctionUrlConfig:
         AuthType: NONE
         InvokeMode: RESPONSE_STREAM
 
-  # ─────────────────────────────────────────────
-  # 4. Biological Dataset Interpretation
-  # ─────────────────────────────────────────────
+  # ── 4. Biological Dataset Interpretation ─────────────────────────────────
   BiologicalDatasetInterpretationFunction:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: ai-biomedical-biological-dataset-interpretation
-      CodeUri: ../lambdas/biological_dataset_interpretation/
+      CodeUri: lambdas/biological_dataset_interpretation/
       Handler: run.sh
       FunctionUrlConfig:
         AuthType: NONE
         InvokeMode: RESPONSE_STREAM
 
-  # ─────────────────────────────────────────────
-  # 5. Plain Language Explanation
-  # ─────────────────────────────────────────────
+  # ── 5. Plain Language Explanation ────────────────────────────────────────
   PlainLanguageExplanationFunction:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: ai-biomedical-plain-language-explanation
-      CodeUri: ../lambdas/plain_language_explanation/
+      CodeUri: lambdas/plain_language_explanation/
       Handler: run.sh
       FunctionUrlConfig:
         AuthType: NONE
         InvokeMode: RESPONSE_STREAM
 
-  # ─────────────────────────────────────────────
-  # 6. Suggested Future Research
-  # ─────────────────────────────────────────────
+  # ── 6. Suggested Future Research ─────────────────────────────────────────
   SuggestedFutureResearchFunction:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: ai-biomedical-suggested-future-research
-      CodeUri: ../lambdas/suggested_future_research/
+      CodeUri: lambdas/suggested_future_research/
       Handler: run.sh
       FunctionUrlConfig:
         AuthType: NONE
         InvokeMode: RESPONSE_STREAM
 
-  # ─────────────────────────────────────────────
-  # 7. Discussion Questions
-  # ─────────────────────────────────────────────
+  # ── 7. Discussion Questions ───────────────────────────────────────────────
   DiscussionQuestionsFunction:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: ai-biomedical-discussion-questions
-      CodeUri: ../lambdas/discussion_questions/
+      CodeUri: lambdas/discussion_questions/
       Handler: run.sh
       FunctionUrlConfig:
         AuthType: NONE
         InvokeMode: RESPONSE_STREAM
 
-  # ─────────────────────────────────────────────
-  # 8. Study Timeline
-  # ─────────────────────────────────────────────
+  # ── 8. Study Timeline ────────────────────────────────────────────────────
   StudyTimelineFunction:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: ai-biomedical-study-timeline
-      CodeUri: ../lambdas/study_timeline/
+      CodeUri: lambdas/study_timeline/
       Handler: run.sh
       FunctionUrlConfig:
         AuthType: NONE
         InvokeMode: RESPONSE_STREAM
 
-  # ─────────────────────────────────────────────
-  # 9. Research Limitations Detector
-  # ─────────────────────────────────────────────
+  # ── 9. Research Limitations Detector ─────────────────────────────────────
   ResearchLimitationsDetectorFunction:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: ai-biomedical-research-limitations-detector
-      CodeUri: ../lambdas/research_limitations_detector/
+      CodeUri: lambdas/research_limitations_detector/
       Handler: run.sh
       FunctionUrlConfig:
         AuthType: NONE
         InvokeMode: RESPONSE_STREAM
 
-  # ─────────────────────────────────────────────
-  # 10. Drug Repurposing Suggestions
-  # ─────────────────────────────────────────────
+  # ── 10. Drug Repurposing Suggestions ─────────────────────────────────────
   DrugRepurposingSuggestionsFunction:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: ai-biomedical-drug-repurposing-suggestions
-      CodeUri: ../lambdas/drug_repurposing_suggestions/
+      CodeUri: lambdas/drug_repurposing_suggestions/
       Handler: run.sh
       FunctionUrlConfig:
         AuthType: NONE
         InvokeMode: RESPONSE_STREAM
 
-  # ─────────────────────────────────────────────
-  # 11. Experiment Planner
-  # ─────────────────────────────────────────────
+  # ── 11. Experiment Planner ────────────────────────────────────────────────
   ExperimentPlannerFunction:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: ai-biomedical-experiment-planner
-      CodeUri: ../lambdas/experiment_planner/
+      CodeUri: lambdas/experiment_planner/
       Handler: run.sh
       FunctionUrlConfig:
         AuthType: NONE
         InvokeMode: RESPONSE_STREAM
 
-  # ─────────────────────────────────────────────
-  # 12. Paper Comparison
-  # ─────────────────────────────────────────────
+  # ── 12. Paper Comparison ─────────────────────────────────────────────────
   PaperComparisonFunction:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: ai-biomedical-paper-comparison
-      CodeUri: ../lambdas/paper_comparison/
+      CodeUri: lambdas/paper_comparison/
       Handler: run.sh
       FunctionUrlConfig:
         AuthType: NONE
         InvokeMode: RESPONSE_STREAM
 
-  # ─────────────────────────────────────────────
-  # S3 Frontend Bucket
-  # ─────────────────────────────────────────────
+  # ── S3 Frontend Bucket ────────────────────────────────────────────────────
   FrontendBucket:
     Type: AWS::S3::Bucket
     Properties:
@@ -232,9 +204,7 @@ Resources:
             Action: s3:GetObject
             Resource: !Sub arn:aws:s3:::${FrontendBucket}/*
 
-# ─────────────────────────────────────────────
-# Outputs
-# ─────────────────────────────────────────────
+# ── Outputs ───────────────────────────────────────────────────────────────
 Outputs:
   AIResearchSummaryUrl:
     Description: Function URL for AI Research Summary
@@ -244,7 +214,7 @@ Outputs:
     Description: Function URL for Keyword Extraction
     Value: !GetAtt KeywordExtractionFunctionUrl.FunctionUrl
 
-  Gene-Disease-TreatmentRelationshipTableUrl:
+  GeneDiseaseeTreatmentRelationshipTableUrl:
     Description: Function URL for Gene-Disease-Treatment Relationship Table
     Value: !GetAtt GeneDiseaseeTreatmentRelationshipTableFunctionUrl.FunctionUrl
 
