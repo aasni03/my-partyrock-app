@@ -57,6 +57,8 @@ jobs:
       # ── 7. Read CloudFormation Outputs ───────────────────────────────────────
       - name: Read CloudFormation outputs and inject into frontend
         run: |
+          set -e
+
           get_output() {
             aws cloudformation describe-stacks \
               --stack-name ai-biomedical-research-assistant \
@@ -107,6 +109,8 @@ jobs:
           echo "WEBSITE_URL=$WEBSITE_URL" >> $GITHUB_ENV
 
           echo "All URLs injected into frontend/index.html"
+          echo "--- Verifying injection ---"
+          grep -o '__URL_[A-Z_]*__' frontend/index.html && echo "WARNING: some placeholders not replaced!" || echo "All placeholders replaced successfully"
 
       # ── 8. Upload frontend to S3 ─────────────────────────────────────────────
       - name: Sync frontend to S3
