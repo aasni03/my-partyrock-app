@@ -52,7 +52,7 @@ Resources:
       BuildMethod: makefile
     Properties:
       FunctionName: ai-biomedical-ai-research-summary
-      CodeUri: lambdas/ai_research_summary/
+      CodeUri: ../lambdas/ai_research_summary/
       Handler: run.sh
       Role: !GetAtt AppBedrockRole.Arn
       FunctionUrlConfig:
@@ -66,7 +66,7 @@ Resources:
       BuildMethod: makefile
     Properties:
       FunctionName: ai-biomedical-keyword-extraction
-      CodeUri: lambdas/keyword_extraction/
+      CodeUri: ../lambdas/keyword_extraction/
       Handler: run.sh
       Role: !GetAtt AppBedrockRole.Arn
       FunctionUrlConfig:
@@ -80,7 +80,7 @@ Resources:
       BuildMethod: makefile
     Properties:
       FunctionName: ai-biomedical-gene-disease-treatment
-      CodeUri: lambdas/gene_disease_treatment/
+      CodeUri: ../lambdas/gene_disease_treatment/
       Handler: run.sh
       Role: !GetAtt AppBedrockRole.Arn
       FunctionUrlConfig:
@@ -94,7 +94,7 @@ Resources:
       BuildMethod: makefile
     Properties:
       FunctionName: ai-biomedical-biological-dataset-interpretation
-      CodeUri: lambdas/biological_dataset_interpretation/
+      CodeUri: ../lambdas/biological_dataset_interpretation/
       Handler: run.sh
       Role: !GetAtt AppBedrockRole.Arn
       FunctionUrlConfig:
@@ -108,7 +108,7 @@ Resources:
       BuildMethod: makefile
     Properties:
       FunctionName: ai-biomedical-plain-language-explanation
-      CodeUri: lambdas/plain_language_explanation/
+      CodeUri: ../lambdas/plain_language_explanation/
       Handler: run.sh
       Role: !GetAtt AppBedrockRole.Arn
       FunctionUrlConfig:
@@ -122,7 +122,7 @@ Resources:
       BuildMethod: makefile
     Properties:
       FunctionName: ai-biomedical-suggested-future-research
-      CodeUri: lambdas/suggested_future_research/
+      CodeUri: ../lambdas/suggested_future_research/
       Handler: run.sh
       Role: !GetAtt AppBedrockRole.Arn
       FunctionUrlConfig:
@@ -136,7 +136,7 @@ Resources:
       BuildMethod: makefile
     Properties:
       FunctionName: ai-biomedical-discussion-questions
-      CodeUri: lambdas/discussion_questions/
+      CodeUri: ../lambdas/discussion_questions/
       Handler: run.sh
       Role: !GetAtt AppBedrockRole.Arn
       FunctionUrlConfig:
@@ -150,7 +150,7 @@ Resources:
       BuildMethod: makefile
     Properties:
       FunctionName: ai-biomedical-study-timeline
-      CodeUri: lambdas/study_timeline/
+      CodeUri: ../lambdas/study_timeline/
       Handler: run.sh
       Role: !GetAtt AppBedrockRole.Arn
       FunctionUrlConfig:
@@ -164,7 +164,7 @@ Resources:
       BuildMethod: makefile
     Properties:
       FunctionName: ai-biomedical-research-limitations-detector
-      CodeUri: lambdas/research_limitations_detector/
+      CodeUri: ../lambdas/research_limitations_detector/
       Handler: run.sh
       Role: !GetAtt AppBedrockRole.Arn
       FunctionUrlConfig:
@@ -178,7 +178,7 @@ Resources:
       BuildMethod: makefile
     Properties:
       FunctionName: ai-biomedical-drug-repurposing-suggestions
-      CodeUri: lambdas/drug_repurposing_suggestions/
+      CodeUri: ../lambdas/drug_repurposing_suggestions/
       Handler: run.sh
       Role: !GetAtt AppBedrockRole.Arn
       FunctionUrlConfig:
@@ -192,7 +192,7 @@ Resources:
       BuildMethod: makefile
     Properties:
       FunctionName: ai-biomedical-experiment-planner
-      CodeUri: lambdas/experiment_planner/
+      CodeUri: ../lambdas/experiment_planner/
       Handler: run.sh
       Role: !GetAtt AppBedrockRole.Arn
       FunctionUrlConfig:
@@ -206,7 +206,7 @@ Resources:
       BuildMethod: makefile
     Properties:
       FunctionName: ai-biomedical-paper-comparison
-      CodeUri: lambdas/paper_comparison/
+      CodeUri: ../lambdas/paper_comparison/
       Handler: run.sh
       Role: !GetAtt AppBedrockRole.Arn
       FunctionUrlConfig:
