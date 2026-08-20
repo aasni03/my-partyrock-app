@@ -41,10 +41,7 @@ jobs:
 
       # ── 5. SAM Build ─────────────────────────────────────────────────────────
       - name: SAM Build
-        run: |
-          echo "Using template: $(pwd)/template.yaml"
-          ls -la template.yaml
-          sam build --template $(pwd)/template.yaml
+        run: sam build --template $(pwd)/template.yaml
 
       # ── 6. SAM Deploy ────────────────────────────────────────────────────────
       - name: SAM Deploy
