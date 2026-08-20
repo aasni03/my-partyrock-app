@@ -41,13 +41,12 @@ jobs:
 
       # ── 5. SAM Build ─────────────────────────────────────────────────────────
       - name: SAM Build
-        run: sam build --template infra/template.yaml --build-dir .aws-sam/build
-        
+        run: sam build --template infra/template.yaml
+
       # ── 6. SAM Deploy ────────────────────────────────────────────────────────
       - name: SAM Deploy
         run: |
           sam deploy \
-            --template-file .aws-sam/build/template.yaml \
             --stack-name ai-biomedical-research-assistant \
             --s3-bucket ${{ secrets.SAM_DEPLOY_BUCKET }} \
             --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM \

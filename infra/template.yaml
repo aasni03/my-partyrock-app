@@ -48,6 +48,8 @@ Resources:
   # ── 1. AI Research Summary ────────────────────────────────────────────────
   AIResearchSummaryFunction:
     Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: makefile
     Properties:
       FunctionName: ai-biomedical-ai-research-summary
       CodeUri: lambdas/ai_research_summary/
@@ -60,6 +62,8 @@ Resources:
   # ── 2. Keyword Extraction ─────────────────────────────────────────────────
   KeywordExtractionFunction:
     Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: makefile
     Properties:
       FunctionName: ai-biomedical-keyword-extraction
       CodeUri: lambdas/keyword_extraction/
@@ -72,6 +76,8 @@ Resources:
   # ── 3. Gene-Disease-Treatment Relationship Table ──────────────────────────
   GeneDiseaseeTreatmentRelationshipTableFunction:
     Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: makefile
     Properties:
       FunctionName: ai-biomedical-gene-disease-treatment
       CodeUri: lambdas/gene_disease_treatment/
@@ -84,6 +90,8 @@ Resources:
   # ── 4. Biological Dataset Interpretation ─────────────────────────────────
   BiologicalDatasetInterpretationFunction:
     Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: makefile
     Properties:
       FunctionName: ai-biomedical-biological-dataset-interpretation
       CodeUri: lambdas/biological_dataset_interpretation/
@@ -96,6 +104,8 @@ Resources:
   # ── 5. Plain Language Explanation ────────────────────────────────────────
   PlainLanguageExplanationFunction:
     Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: makefile
     Properties:
       FunctionName: ai-biomedical-plain-language-explanation
       CodeUri: lambdas/plain_language_explanation/
@@ -108,6 +118,8 @@ Resources:
   # ── 6. Suggested Future Research ─────────────────────────────────────────
   SuggestedFutureResearchFunction:
     Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: makefile
     Properties:
       FunctionName: ai-biomedical-suggested-future-research
       CodeUri: lambdas/suggested_future_research/
@@ -120,6 +132,8 @@ Resources:
   # ── 7. Discussion Questions ───────────────────────────────────────────────
   DiscussionQuestionsFunction:
     Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: makefile
     Properties:
       FunctionName: ai-biomedical-discussion-questions
       CodeUri: lambdas/discussion_questions/
@@ -132,6 +146,8 @@ Resources:
   # ── 8. Study Timeline ────────────────────────────────────────────────────
   StudyTimelineFunction:
     Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: makefile
     Properties:
       FunctionName: ai-biomedical-study-timeline
       CodeUri: lambdas/study_timeline/
@@ -144,6 +160,8 @@ Resources:
   # ── 9. Research Limitations Detector ─────────────────────────────────────
   ResearchLimitationsDetectorFunction:
     Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: makefile
     Properties:
       FunctionName: ai-biomedical-research-limitations-detector
       CodeUri: lambdas/research_limitations_detector/
@@ -156,6 +174,8 @@ Resources:
   # ── 10. Drug Repurposing Suggestions ─────────────────────────────────────
   DrugRepurposingSuggestionsFunction:
     Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: makefile
     Properties:
       FunctionName: ai-biomedical-drug-repurposing-suggestions
       CodeUri: lambdas/drug_repurposing_suggestions/
@@ -168,6 +188,8 @@ Resources:
   # ── 11. Experiment Planner ────────────────────────────────────────────────
   ExperimentPlannerFunction:
     Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: makefile
     Properties:
       FunctionName: ai-biomedical-experiment-planner
       CodeUri: lambdas/experiment_planner/
@@ -180,6 +202,8 @@ Resources:
   # ── 12. Paper Comparison ─────────────────────────────────────────────────
   PaperComparisonFunction:
     Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: makefile
     Properties:
       FunctionName: ai-biomedical-paper-comparison
       CodeUri: lambdas/paper_comparison/
