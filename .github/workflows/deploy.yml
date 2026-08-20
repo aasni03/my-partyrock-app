@@ -6,12 +6,13 @@ on:
       - main
   workflow_dispatch:
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   deploy:
     name: Build & Deploy to AWS
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
 
     steps:
       # ── 1. Checkout ──────────────────────────────────────────────────────────
@@ -56,7 +57,6 @@ jobs:
       # ── 7. Read CloudFormation Outputs ───────────────────────────────────────
       - name: Read CloudFormation outputs and inject into frontend
         run: |
-          # Helper: fetch a single output value by key
           get_output() {
             aws cloudformation describe-stacks \
               --stack-name ai-biomedical-research-assistant \
@@ -64,7 +64,6 @@ jobs:
               --output text
           }
 
-          # Fetch all Lambda Function URLs
           URL=$(get_output AIResearchSummaryUrl)
           sed -i "s|__URL_AI_RESEARCH_SUMMARY__|$URL|g" frontend/index.html
 
@@ -101,14 +100,13 @@ jobs:
           URL=$(get_output PaperComparisonUrl)
           sed -i "s|__URL_PAPER_COMPARISON__|$URL|g" frontend/index.html
 
-          # Capture bucket name and website URL for later steps
           BUCKET_NAME=$(get_output BucketName)
           WEBSITE_URL=$(get_output WebsiteUrl)
 
           echo "BUCKET_NAME=$BUCKET_NAME" >> $GITHUB_ENV
           echo "WEBSITE_URL=$WEBSITE_URL" >> $GITHUB_ENV
 
-          echo "✅ All URLs injected into frontend/index.html"
+          echo "All URLs injected into frontend/index.html"
 
       # ── 8. Upload frontend to S3 ─────────────────────────────────────────────
       - name: Sync frontend to S3
@@ -120,7 +118,5 @@ jobs:
       # ── 9. Print Website URL ─────────────────────────────────────────────────
       - name: Print deployment URL
         run: |
-          echo "══════════════════════════════════════════════"
-          echo "  ✅ Deployment complete!"
-          echo "  🌐 Website URL: ${{ env.WEBSITE_URL }}"
-          echo "══════════════════════════════════════════════"
+          echo "Deployment complete!"
+          echo "Website URL: ${{ env.WEBSITE_URL }}"
